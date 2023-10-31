@@ -170,14 +170,8 @@ class Equipo:
          data = json.load(file)
          self.__nombre_equipo = data.get('equipo')
          jugadores = data.get('jugadores')
-         # self.__jugadores = [ self.__Crear_jugador(jugador) for jugador in jugadores]
-         for jugador in jugadores:
-            objeto_jugador = self.__Crear_jugador(jugador)
-            self.__jugadores.append(objeto_jugador)
-
-
-         self.__cantidad_jugadores = len(self.__jugadores)
-         
+         self.__jugadores = [ self.__Crear_jugador(jugador) for jugador in jugadores]
+         self.__cantidad_jugadores = len(self.__jugadores)         
       except:
         print('Ocurrio un error en la creacion del equipo')
         return False
