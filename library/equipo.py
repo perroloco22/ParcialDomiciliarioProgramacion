@@ -7,15 +7,15 @@ import json
 RUTA_FILES = './Files/'
 
 class Equipo:
-   def __init__(self, root):
+   def __init__(self, root: str):
+      #Atributos
       self.__ruta = root
       self.__jugadores = []
       self.__nombre_equipo = ''
       self.__cantidad_jugadores = len(self.__jugadores)
       self.__jugador_actual = None
 
-   #Atributos
-
+   #Getters and setters
    @property
    def Ruta(self):
        return self.__ruta
@@ -43,9 +43,19 @@ class Equipo:
    
    #Metodos privados
    def __Imprimir_jugador_posicion(self, jg: Jugador) -> None:
+      '''
+      Esta función privada imprime el nombre y la posición de un jugador.
+      Recibe: Jugador
+      Retorna: None
+      '''
       print(f'{jg.Nombre} - {jg.Posicion}')
 
    def __Crear_estadistica(self,estadisticas: dict) -> Estadisticas:
+      '''
+      Crea una instancia de la clase Estadisticas y la retorna
+      Recibe: un diccionario
+      Retorna: Un objeto Estadisticas
+      '''
       temporadas = estadisticas.get('temporadas')
       puntos_totales = estadisticas.get('puntos_totales')
       promedio_puntos_por_partido = estadisticas.get('promedio_puntos_por_partido')
@@ -66,16 +76,26 @@ class Equipo:
       return estadistica
 
    def __Crear_jugador(self, jugador: dict) -> Jugador:
+      '''
+      Crea una instancia de la clase Jugador y la retorna
+      Recibe: un diccionario
+      Retorna: Un objeto Jugador
+      '''
       jugador_transformado = Jugador()
       jugador_transformado.Nombre = jugador.get('nombre')
       jugador_transformado.Posicion = jugador.get('posicion')
       jugador_transformado.Logros = jugador.get('logros')
-      estadisticas = jugador.get('estadisticas')      
-      estadisticas = self.__Crear_estadistica(estadisticas)
+      estadisticas_diccionario = jugador.get('estadisticas')  
+      estadisticas = self.__Crear_estadistica(estadisticas_diccionario)
       jugador_transformado.Estadisticas = estadisticas
       return jugador_transformado
 
    def __Crear_formate_csv(self)->str:
+      '''
+      Retorna el un string en formato csv con los campos nombre,posicion y las estadisticas del jugador actual
+      Recibe: None
+      Retorna: str
+      '''
       jugador = self.__jugador_actual   
       encabezado = f'Nombre,Posicion,'
       estadisticas = jugador.Estadisticas.Get_estadisticas()
@@ -88,6 +108,12 @@ class Equipo:
       return encabezado + cuerpo
 
    def __Obtener_jugador_y_promedio_pts_por_partido(self)-> dict:
+      '''
+      Esta función devuelve un diccionario que contiene los nombres de los jugadores y sus promedios de puntos por partido.
+      Recibe: None
+      Retorna: dict
+      '''
+
       jugadores_y_promedios= []
       if not self.__jugadores:
          return jugadores_y_promedios
@@ -96,15 +122,30 @@ class Equipo:
       return jugadores_y_promedios
 
    def __Ordenar_por_nombre(self, jugadores_a_ordenar: list[dict]) -> list[dict]:
+      '''
+      Ordena jugadores de manera ascendente por el nombre de cada jugador
+      Recibe: list[dict]
+      Retorna: list[dict]
+      '''
       jugadores_ordenados_por_nombres = quick_sort(jugadores_a_ordenar,'Nombre','asc')
       return jugadores_ordenados_por_nombres
    
-   def __Calcular_promedio(self, jugadores: list[dict]) -> float:   
+   def __Calcular_promedio(self, jugadores: list[dict]) -> float:  
+      '''
+      Calcula el promedio de puntos por partidos de una lista de jugadores
+      Recibe: list[dict]
+      Retorna: float
+      ''' 
       cantidad_jugadores = len(jugadores)
       sumatoria = reduce(lambda acumulador,jugador: acumulador + jugador.get('Promedio de puntos por partido'),jugadores,0)
       return sumatoria / cantidad_jugadores
 
    def __Buscar_jugador_por_nombre(self,nombre: str):
+      '''
+      Busca un jugador por su nombre y lo retorna
+      Recibe: str
+      Retorna: Jugador
+      '''
       jugadores = self.__jugadores
       jugador_encontrado = None
       
@@ -117,6 +158,11 @@ class Equipo:
    #Metodos publicos
 
    def Crear_equipo(self) -> bool:
+      '''
+      Esta función carga datos de un archivo JSON para crear un equipo de baloncesto.
+      Recibe: None
+      Retorna: Bool: True si la creación del equipo fue exitosa, False en caso contrario.
+      '''
       if self.__ruta == '':
          return False
       try:
@@ -124,7 +170,12 @@ class Equipo:
          data = json.load(file)
          self.__nombre_equipo = data.get('equipo')
          jugadores = data.get('jugadores')
-         self.__jugadores = [ self.__Crear_jugador(jugador) for jugador in jugadores]
+         # self.__jugadores = [ self.__Crear_jugador(jugador) for jugador in jugadores]
+         for jugador in jugadores:
+            objeto_jugador = self.__Crear_jugador(jugador)
+            self.__jugadores.append(objeto_jugador)
+
+
          self.__cantidad_jugadores = len(self.__jugadores)
          
       except:
@@ -135,12 +186,22 @@ class Equipo:
       
    
    def Mostrar_Jugadores(self):
+      '''
+      Esta función imprime los nombres y posiciones de los jugadores del equipo.
+      Recibe: None
+      Retorna: str
+      '''
       if not self.__jugadores:
-         return ''      
+         return ''  
       for jugador in self.__jugadores:
          self.__Imprimir_jugador_posicion(jugador)
    
    def Ver_estadisticas_del_jugador(self, index: str) -> None:
+      '''
+      Esta función muestra las estadísticas de un jugador en el equipo.
+      Recibe: index (str): El índice del jugador cuyas estadísticas se desean ver.
+      Retorna: None
+      '''
       if self.__jugadores and es_digito(index) and int(index) < self.__cantidad_jugadores:         
          self.__jugador_actual = self.__jugadores[int(index)-1]         
          estadisticas = self.__jugador_actual.Estadisticas.Get_estadisticas()
@@ -149,7 +210,12 @@ class Equipo:
       else:
          print('Indice ingresado incorrecto')
          
-   def Guardar_estadisticas(self): 
+   def Guardar_estadisticas(self):
+      '''
+      Esta función guarda las estadísticas de un jugador en un archivo CSV.
+      Recibe: None
+      Retorna: None
+      ''' 
       if not self.__jugador_actual:
          print('Primero debe seleccionar un jugador en la opcion 2')
          return
@@ -162,6 +228,11 @@ class Equipo:
       
       
    def Ver_logros_de_un_jugador(self, nombre: str) -> None:
+      '''
+      Esta función muestra los logros de un jugador en el equipo.
+      Recibe: str
+      Retorna: None
+      '''
       if not self.__jugadores:
          return
       if not es_nombre_valido(nombre):
@@ -172,6 +243,11 @@ class Equipo:
          print(logro)
          
    def Calcular_y_mostrar_promedio_orndenado(self):
+      '''
+      Esta función calcula el promedio de puntos por partido de los jugadores en el equipo, los ordena por nombre y muestra el resultado.
+      Recibe: None
+      Retorna: None
+      '''
       jugadores = self.__Obtener_jugador_y_promedio_pts_por_partido()
       promedio_de_puntos = round(self.__Calcular_promedio(jugadores),2)
       jugadores_ordenados = self.__Ordenar_por_nombre(jugadores)
@@ -181,7 +257,13 @@ class Equipo:
          for clave,valor in jugador.items():
             print(f'{clave}: {valor}')
        
-   def Pertenece_al_salon_de_la_fama(self) -> str:      
+   def Pertenece_al_salon_de_la_fama(self) -> str:
+      '''
+      Esta función verifica si un jugador pertenece al Salón de la Fama del baloncesto y devuelve un mensaje indicando el resultado.
+      Recibe: None
+      Retorna: str.
+      '''
+
       if not self.__jugadores:
          return 'No hay jugadores en el equipo'
       
@@ -196,6 +278,11 @@ class Equipo:
       return f'El jugador {nombre_validado.group()} no esta en el salon de la fama del baloncesto'
       
    def Jugador_con_mas_rebotes(self):
+      '''
+      Esta función encuentra y muestra el jugador con la mayor cantidad de rebotes totales en el equipo.
+      Recibe: None
+      Retorna: None
+      '''
       if not self.__jugadores:
          return None
       jugadores = [{'Nombre': jugador.Nombre, 'Rebotes totales': jugador.Estadisticas.Rebotes_totales } for jugador in self.__jugadores]

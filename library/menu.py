@@ -25,16 +25,31 @@ Menú:
   #Metodos privados
 
   def __Validar_opcion_seleccionada(self, opcion: str):
+    '''
+    Valida si la opción seleccionada.
+    Recibe: str
+    Retorna: Match si es que supero la validacion, caso contrario None
+    '''
     patron = r'^[0-7]$'
     return re.match(patron,opcion)
     
   
   def __Seleccionar_opcion(self):
+    '''
+    Solicita al usuario que ingrese una opción del menú.
+    Recibe: None
+    Retorna: str.
+    '''
     return input('Ingrese la opcion deseada..\n')
 
   #Metodos publicos
 
   def Mostrar_menu(self) -> None:
+    '''
+    Muestra y gestiona el menú interactivo.
+    Recibe: None
+    Retorna: None
+    '''
     if not self.__equipo_creado:
       print('Hay un error en la creacion del equipo')
       return
@@ -68,7 +83,6 @@ Menú:
         break      
 
     
-# menu = Menu().Mostrar_menu()
   
     
 

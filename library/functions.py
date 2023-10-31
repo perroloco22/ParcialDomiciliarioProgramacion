@@ -1,16 +1,29 @@
 import re
 
 
-def es_digito(numero):
+def es_digito(numero: str):
+    '''
+    Verifica si una cadena es un número de uno o dos dígitos.
+    Recibe: str
+    Retorna: objeto match si supera la validacion casi contrario None
+    '''
     patron = r'^\d{1,2}$'
     return re.match(patron, numero)
 
 def reemplazar_guinoes_por_espacios(string: str) -> str:
+    '''
+    Reemplaza guiones bajos por espacios en una cadena.
+    Recibe: str
+    Retorna: str
+    '''
     patron = r'_'
     nuevo_texto = re.sub(patron,' ',string)
     return nuevo_texto
 
 def quick_sort(lista: list[dict], key: str,modo: str) -> list[dict] :
+    '''
+    Ordena una lista de diccionarios usando el algoritmo de Quick Sort. Los ordena segun la clave que reciba como parametro. Segun el modo recibido los ordena de manera descendente("des") o ascendente("asc")
+    '''
     if len(lista) < 2:
         return lista
     else:

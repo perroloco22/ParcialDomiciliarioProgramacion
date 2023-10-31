@@ -1,5 +1,5 @@
 class Estadisticas:
-    def __init__(self, temporadas, puntos_totales,promedio_puntos_por_partido,rebotes_totales,promedio_rebotes_por_partido,asistencias_totales,promedio_asistencias_por_partido,robos_totales,bloqueos_totales,porcentaje_tiros_de_campo,porcentaje_tiros_libres,porcentaje_tiros_triples):
+    def __init__(self, temporadas: int, puntos_totales: int,promedio_puntos_por_partido: float,rebotes_totales: int,promedio_rebotes_por_partido: float,asistencias_totales: int,promedio_asistencias_por_partido: float,robos_totales: int,bloqueos_totales: int,porcentaje_tiros_de_campo: float,porcentaje_tiros_libres: float,porcentaje_tiros_triples: float):
 
         self.__temporadas = temporadas
         self.__puntos_totales = puntos_totales
@@ -99,6 +99,11 @@ class Estadisticas:
         self.__porcentaje_tiros_triples = n_porcentaje
 
     def Get_estadisticas(self)->dict:
+        '''
+        Devuelve las estadisticas en forma de diccionario
+        Recibe: None
+        Retorna: dict
+        '''
         return {
             "Temporadas": self.__temporadas,
             "Puntos totales": self.__puntos_totales,
