@@ -92,20 +92,23 @@ class Equipo:
 
    def __Crear_formate_csv(self)->str:
       '''
-      Retorna el un string en formato csv con los campos nombre,posicion y las estadisticas del jugador actual
+      Retorna un string en formato csv con los campos nombre,posicion y las estadisticas del jugador actual
       Recibe: None
       Retorna: str
+      
+      encabezado = [*jugadores[0]]
+      cuerpo = ','.join(encabezado)+'\n'
+      for jugador in jugadores:
+         valores = [str(valor) for valor in jugador.values()]
+         cuerpo += ','.join(valores)+'\n'
       '''
-      jugador = self.__jugador_actual   
-      encabezado = f'Nombre,Posicion,'
-      estadisticas = jugador.Estadisticas.Get_estadisticas()
-      claves_de_estadisticas = estadisticas.keys()
-      encabezado = encabezado + ','.join(claves_de_estadisticas) + '\n'
-      cuerpo = f'{jugador.Nombre},{jugador.Posicion}'
-      for clave in claves_de_estadisticas:
-         cuerpo += f',{estadisticas.get(clave)}'
-      cuerpo += '\n'
-      return encabezado + cuerpo
+
+      jugador_transformado = self.__jugador_actual.Transformar_Jugador_a_diccionario()   
+      encabezado_claves = [*jugador_transformado]
+      cuerpo = ','.join(encabezado_claves)+'\n'
+      valores = [str(valor) for valor in jugador_transformado.values()]
+      cuerpo +=  ','.join(valores)+'\n'
+      return cuerpo
 
    def __Obtener_jugador_y_promedio_pts_por_partido(self)-> dict:
       '''
@@ -117,8 +120,7 @@ class Equipo:
       jugadores_y_promedios= []
       if not self.__jugadores:
          return jugadores_y_promedios
-      jugadores = self.__jugadores
-      jugadores_y_promedios= [{'Nombre':jugador.Nombre,'Promedio de puntos por partido': jugador.Estadisticas.Promedio} for jugador in jugadores]
+      jugadores_y_promedios= [jugador.Transformar_Jugador_a_diccionario() for jugador in self.__jugadores]
       return jugadores_y_promedios
 
    def __Ordenar_por_nombre(self, jugadores_a_ordenar: list[dict]) -> list[dict]:
@@ -248,8 +250,7 @@ class Equipo:
       clave_promedio ='Promedio de puntos por partido'      
       print(f'{clave_promedio}: {promedio_de_puntos}')
       for jugador in jugadores_ordenados:
-         for clave,valor in jugador.items():
-            print(f'{clave}: {valor}')
+         self.__Mostrar_jugador(jugador)
        
    def Pertenece_al_salon_de_la_fama(self) -> str:
       '''
@@ -291,26 +292,69 @@ class Equipo:
             bandera_primer_jugador = False
             continue
          break
- 
 
-  
+   #EJERCICIO ADICIONAL. MI DNI TERMINA EN 0 LA CLAVE ES TEMPORADA
+   def __Mostrar_jugador(self,jugador:dict)->None:
+      print(f"Nombre: {jugador.get('Nombre')}")
+      print(f"Posicion: {jugador.get('Posicion')}")
+      print(f"Temporadas: {jugador.get('Temporadas')}")
+      print(f"Puntos totales: {jugador.get('Puntos totales')}")
+      print(f"Promedio: {jugador.get('Promedio')}")
+      print(f"Rebotes totales: {jugador.get('Rebotes totales')}")
+      print(f"Promedio de rebotes por partido: {jugador.get('Promedio de rebotes por partido')}")
+      print(f"Asistencias totales: {jugador.get('Asistencias totales')}")
+      print(f"Promedio de asistencias por partido: {jugador.get('Promedio de asistencias por partido')}")
+      print(f"Robos totales: {jugador.get('Robos totales')}")
+      print(f"Bloqueos totales: {jugador.get('Bloqueos totales')}")
+      print(f"Porncentaje de tiros de campo: {jugador.get('Porncentaje de tiros de campo')}")
+      print(f"Porcentaje de tiros libres: {jugador.get('Porcentaje de tiros libres')}")
+      print(f"Procentaje de tiros triples: {jugador.get('Procentaje de tiros triples')}")
+      print(f"Logros: {','.join(jugador.get('Logros'))}")
 
-     
-# test_equipo = Equipo('./Data/dream_team.json')
-# test_equipo.Crear_equipo()
-# test_equipo.Mostrar_Jugadores()
-# test_equipo.Ver_estadisticas_del_jugador("0")
-# test_equipo.Guardar_estadisticas()
-# test_equipo.Ver_logros_de_un_jugador("michael Jordan")
-# test_equipo.Calcular_y_mostrar_promedio_orndenado()
-# print(test_equipo.Pertenece_al_salon_de_la_fama())    
-# test_equipo.Jugador_con_mas_rebotes()
+   def __Obtener_jugadores_ordenados_por_temporadas_desc(self):
+      if not self.__jugadores:
+         print("no hay jugadores cargados")
+         return
+
+      nombre_y_temporadas_de_jugadores = [ jugador.Transformar_Jugador_a_diccionario() for jugador in self.__jugadores] 
+      return quick_sort(nombre_y_temporadas_de_jugadores, 'Temporadas','desc')
+      
+   
+   def Mostrar_jugadores_ordenados_por_temporadas_desc(self):
+      jugadores = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
+      for jugador in jugadores:
+         self.__Mostrar_jugador(jugador)
+         print('\n')
+
+
+   def Guardar_jugadores_ordenados_por_temporadas_desc(self):
+      jugadores = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
+      encabezado = [*jugadores[0]]
+      cuerpo = ','.join(encabezado)+'\n'
+      for jugador in jugadores:
+         valores = [str(valor) for valor in jugador.values()]
+         cuerpo += ','.join(valores)+'\n'
+
+      try:        
+         with open(f'{RUTA_FILES}BricenoCastillo.csv','w') as file:
+            file.write(cuerpo)
+         print('Guardado exitoso')
+      except:
+         print('Ocurrio un error en la creacion/guardado del archivo')
+
+      
+   def Guardar_jugadores_ordenados_por_temporadas_desc_Json(self):
+      jugadores = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
+      nombre_archivo_ingresado = input('Ingrese el nombre para el archivo a guardar:  ')
+      if not validar_nombre_archivo(nombre_archivo_ingresado):
+         print('Ingreso un formato invalido para el nombre del archivo a guardar')
+         return
+      try:
+         with open(f'{RUTA_FILES}{nombre_archivo_ingresado}.json', 'w',encoding='utf-8') as file:            
+            json.dump(jugadores,file,indent=2)
+         print('json guardado con exito')
+      except Exception as e:
+        print(f'An exception occurred {e}')
 
 
 
-
-
-
-       
-       
-    

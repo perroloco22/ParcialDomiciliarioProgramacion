@@ -1,5 +1,5 @@
 import re
-
+from jugador import Jugador
 
 def es_digito(numero: str):
     '''
@@ -44,3 +44,9 @@ def quick_sort(lista: list[dict], key: str,modo: str) -> list[dict] :
 def es_nombre_valido(nombre: str):
     patron = r'^[a-zA-z][a-zA-Z ]+[a-z]$'
     return re.match(patron,nombre)
+
+def validar_nombre_archivo(nombre: str):
+    patron = r'^[a-zA-z0-9_]+$'
+    return re.match(patron,nombre)
+
+
