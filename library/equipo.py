@@ -2,9 +2,13 @@ from functools import reduce
 from functions import *
 from jugador import Jugador
 from estadisticas import Estadisticas
-import json 
+from database import BdConexion
+import json
+ 
 
 RUTA_FILES = './Files/'
+RUTA_DB = './Db/'
+
 
 class Equipo:
    def __init__(self, root: str):
@@ -90,25 +94,19 @@ class Equipo:
       jugador_transformado.Estadisticas = estadisticas
       return jugador_transformado
 
-   def __Crear_formate_csv(self)->str:
+   def __Crear_formato_csv_jugador(self,jugadores: list[dict])->str:
       '''
       Retorna un string en formato csv con los campos nombre,posicion y las estadisticas del jugador actual
       Recibe: None
       Retorna: str
-      
+      '''
       encabezado = [*jugadores[0]]
       cuerpo = ','.join(encabezado)+'\n'
       for jugador in jugadores:
          valores = [str(valor) for valor in jugador.values()]
          cuerpo += ','.join(valores)+'\n'
-      '''
-
-      jugador_transformado = self.__jugador_actual.Transformar_Jugador_a_diccionario()   
-      encabezado_claves = [*jugador_transformado]
-      cuerpo = ','.join(encabezado_claves)+'\n'
-      valores = [str(valor) for valor in jugador_transformado.values()]
-      cuerpo +=  ','.join(valores)+'\n'
       return cuerpo
+
 
    def __Obtener_jugador_y_promedio_pts_por_partido(self)-> dict:
       '''
@@ -116,11 +114,10 @@ class Equipo:
       Recibe: None
       Retorna: dict
       '''
-
       jugadores_y_promedios= []
       if not self.__jugadores:
          return jugadores_y_promedios
-      jugadores_y_promedios= [jugador.Transformar_Jugador_a_diccionario() for jugador in self.__jugadores]
+      jugadores_y_promedios= [{'Nombre': jugador.Nombre, 'Promedio de puntos por partido': jugador.Estadisticas.Promedio} for jugador in self.__jugadores]
       return jugadores_y_promedios
 
    def __Ordenar_por_nombre(self, jugadores_a_ordenar: list[dict]) -> list[dict]:
@@ -179,7 +176,6 @@ class Equipo:
         return False
       else:
         return True 
-      
    
    def Mostrar_Jugadores(self):
       '''
@@ -215,14 +211,17 @@ class Equipo:
       if not self.__jugador_actual:
          print('Primero debe seleccionar un jugador en la opcion 2')
          return
-      texto_a_guardar = self.__Crear_formate_csv()
+      estadisticas = self.__jugador_actual.Estadisticas.Get_estadisticas()
+      jugador_formateado = {'Nombre': self.__jugador_actual.Nombre, 'Posicion': self.__jugador_actual.Posicion}
+      jugador_formateado.update(estadisticas)
+
+      texto_a_guardar = self.__Crear_formato_csv_jugador([jugador_formateado])
       try:
          with open(f'{RUTA_FILES}Estadisticas_{self.__jugador_actual.Nombre}.csv', 'w') as file:
            file.write(texto_a_guardar)
       except:
         print('Ocurrio un error en el intento de guardar el archivo ')
-      
-      
+ 
    def Ver_logros_de_un_jugador(self, nombre: str) -> None:
       '''
       Esta función muestra los logros de un jugador en el equipo.
@@ -250,7 +249,7 @@ class Equipo:
       clave_promedio ='Promedio de puntos por partido'      
       print(f'{clave_promedio}: {promedio_de_puntos}')
       for jugador in jugadores_ordenados:
-         self.__Mostrar_jugador(jugador)
+         print(f'Nombre: {jugador.get("Nombre")} - {clave_promedio}: {jugador.get(clave_promedio)}')
        
    def Pertenece_al_salon_de_la_fama(self) -> str:
       '''
@@ -262,7 +261,7 @@ class Equipo:
       if not self.__jugadores:
          return 'No hay jugadores en el equipo'
       
-      nombre_a_buscar = input('Ingrese el nombre del jugador a comprobar...')
+      nombre_a_buscar = input('Ingrese el nombre del jugador a comprobar: ')
       nombre_validado = es_nombre_valido(nombre_a_buscar)
       if not nombre_validado:
          return 'Nombre invalido'
@@ -272,7 +271,7 @@ class Equipo:
          return f'El jugador {jugador_buscado.Nombre} esta en el salon de la fama del baloncesto'
       return f'El jugador {nombre_validado.group()} no esta en el salon de la fama del baloncesto'
       
-   def Jugador_con_mas_rebotes(self):
+   def Jugador_con_mas_rebotes(self) -> None:
       '''
       Esta función encuentra y muestra el jugador con la mayor cantidad de rebotes totales en el equipo.
       Recibe: None
@@ -311,41 +310,61 @@ class Equipo:
       print(f"Procentaje de tiros triples: {jugador.get('Procentaje de tiros triples')}")
       print(f"Logros: {','.join(jugador.get('Logros'))}")
 
-   def __Obtener_jugadores_ordenados_por_temporadas_desc(self):
+   def __Obtener_jugadores_ordenados_por_temporadas_desc(self) -> list[dict]:
+      '''
+      Ordena desciendentemente por temporadas una lista de diccionario donde cada diccionario representa a jugador con su nombre y temporadas jugadas y al finalizar la retorna
+      Recibe: None
+      Retorna: list[dict]
+      '''
+      
       if not self.__jugadores:
          print("no hay jugadores cargados")
          return
-
-      nombre_y_temporadas_de_jugadores = [ jugador.Transformar_Jugador_a_diccionario() for jugador in self.__jugadores] 
+      nombre_y_temporadas_de_jugadores = [ {'Nombre': jugador.Nombre, 'Temporadas': jugador.Estadisticas.Temporadas} for jugador in self.__jugadores] 
       return quick_sort(nombre_y_temporadas_de_jugadores, 'Temporadas','desc')
-      
+
+   def __Obtener_jugadores_ordenados_por_valor_sumado(self) -> list[dict]:
+      '''
+      Devuelve una lista de jugadores ordenados ascendentemente por la suma de bloqueos totales mas los robos totales
+      Recibe: None
+      Retorna: list[dict]
+      '''
+      jugadores_con_valor_sumado = [{'Nombre':jugador.Nombre, 'Suma': jugador.Estadisticas.Robos_totales + jugador.Estadisticas.Bloqueos_totales} for jugador in self.__jugadores]
+      return quick_sort(jugadores_con_valor_sumado,'Suma','asc')
+
    
-   def Mostrar_jugadores_ordenados_por_temporadas_desc(self):
+   def Mostrar_jugadores_ordenados_por_temporadas_desc(self) -> None:
+      '''
+      Imprime por consola los jugadores ordenados descendentemente por temporadas
+      '''
       jugadores = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
       for jugador in jugadores:
-         self.__Mostrar_jugador(jugador)
-         print('\n')
-
+         print(f'{jugador.get("Nombre")} - Temporadas: {jugador.get("Temporadas")} ')
 
    def Guardar_jugadores_ordenados_por_temporadas_desc(self):
+      '''
+      Guarda en un archivo csv los jugadores ordenados por temporada
+      Recibe: None
+      Retorna: None
+      '''
       jugadores = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
-      encabezado = [*jugadores[0]]
-      cuerpo = ','.join(encabezado)+'\n'
-      for jugador in jugadores:
-         valores = [str(valor) for valor in jugador.values()]
-         cuerpo += ','.join(valores)+'\n'
-
+      jugadores_formateados_csv = self.__Crear_formato_csv_jugador(jugadores)
       try:        
          with open(f'{RUTA_FILES}BricenoCastillo.csv','w') as file:
-            file.write(cuerpo)
+            file.write(jugadores_formateados_csv)
          print('Guardado exitoso')
-      except:
-         print('Ocurrio un error en la creacion/guardado del archivo')
-
+      except Exception as e:
+        print(f'An exception occurred {e}')
       
    def Guardar_jugadores_ordenados_por_temporadas_desc_Json(self):
+      '''
+      Guarda en un archivo json los jugadores ordenados por temporada. El nombre del archivo sera ingresado por el usuario
+      Recibe: None
+      Retorna: None
+      '''
+
       jugadores = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
-      nombre_archivo_ingresado = input('Ingrese el nombre para el archivo a guardar:  ')
+      nombre_archivo_ingresado = input('Ingrese el nombre para el archivo a guardar: ')
       if not validar_nombre_archivo(nombre_archivo_ingresado):
          print('Ingreso un formato invalido para el nombre del archivo a guardar')
          return
@@ -356,5 +375,54 @@ class Equipo:
       except Exception as e:
         print(f'An exception occurred {e}')
 
+   def Guardar_en_base_datos(self)->None:
+      '''
+      Guarda en una base de datos lo jugadores ordenados descendentemente por temporadas
+      Recibe: None
+      Retorna: None
+      '''
+      jugadores_ordenados = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
+      nombre_de_la_base_de_datos = f'{RUTA_DB}JugadoresNba.db'
+      base_de_datos = BdConexion(nombre_de_la_base_de_datos)
+      nombre_de_la_tabla = 'Temporadas'
+      base_de_datos.Crear_tabla(nombre_de_la_tabla,jugadores_ordenados[0])
+      base_de_datos.Agregar_registros(nombre_de_la_tabla,jugadores_ordenados)
+      print(f'Se guardo la informacion en la base de datos {nombre_de_la_base_de_datos} en la tabla {nombre_de_la_tabla}')
+   
+   def Mostrar_jugadores_segun_robo_mas_bloqueos(self):
+      '''
+      Muestra la cantida de jugadores que desea ver el usuario, ordenados ascendentemente por la suma de robos mas bloqueos totales.
+      Recibe: None
+      Retorna: None
+      '''
+      cantidad = input("Ingrese la cantidad de jugadores que desea ver: ")
+      if es_digito(cantidad) and len(self.__jugadores) >= int(cantidad):        
+         jugadores_ordenados = self.__Obtener_jugadores_ordenados_por_valor_sumado()
+         suma_maxima = jugadores_ordenados[-1].get('Suma')
+         for jugador in jugadores_ordenados[:int(cantidad)]:
+            porcentaje = obtener_porcentaje(jugador.get('Suma'),suma_maxima)
+            jugador.update({'Porcentaje': porcentaje})
+            print(f'{jugador.get("Nombre")} - {jugador.get("Suma")} - {jugador.get("Porcentaje")}%')
+      else:
+         print(f'Tiene que ingresar un numero menor a {len(self.__jugadores) + 1}')
 
 
+
+# test_equipo = Equipo('./Data/dream_team.json')
+# test_equipo.Crear_equipo()
+# test_equipo.Mostrar_Jugadores()
+# test_equipo.Ver_estadisticas_del_jugador('1')
+# test_equipo.Guardar_estadisticas()
+# test_equipo.Ver_logros_de_un_jugador('Michael Jordan')
+# test_equipo.Calcular_y_mostrar_promedio_orndenado()
+# print(test_equipo.Pertenece_al_salon_de_la_fama())
+# test_equipo.Jugador_con_mas_rebotes()
+# test_equipo.Mostrar_jugadores_ordenados_por_temporadas_desc()
+# test_equipo.Guardar_jugadores_ordenados_por_temporadas_desc_Json()
+# test_equipo.Guardar_en_base_datos()
+# test_equipo.Mostrar_jugadores_segun_robo_mas_bloqueos()
+
+
+       
+       
+    

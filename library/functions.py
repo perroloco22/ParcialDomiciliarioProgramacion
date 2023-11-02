@@ -49,4 +49,7 @@ def validar_nombre_archivo(nombre: str):
     patron = r'^[a-zA-z0-9_]+$'
     return re.match(patron,nombre)
 
+def obtener_porcentaje(parte: float, total: float)->float:
+    return round((parte/total) * 100,2)
+
 

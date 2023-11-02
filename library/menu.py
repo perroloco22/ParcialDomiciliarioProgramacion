@@ -16,6 +16,9 @@ Menú:
 5-Calcular y mostrar el promedio de puntos por partido de todo el equipo del Dream Team, ordenado por nombre de manera ascendente.
 6-Buscar un jugador por su nombre y mostrar si es miembro del Salon de la fama del baloncesto
 7-Calcular y mostrar el jugador con la mayor cantidad de rebotes totales.
+8-Ordenar el listado de manera descendente y mostrarlo, guardarlo en un archivo CSV, guardarlo en un archivo JSON con el nombre que usted desee y guardarlos en una base de datos
+9-Mostrar la cantidad deseada de jugadores ordenados por la suma de robos y bloqueos totales con su respectivo porcentaje
+
 0-Salir del menu
 '''
     self.__equipo = Equipo(RUTA_JSON)
@@ -30,7 +33,7 @@ Menú:
     Recibe: str
     Retorna: Match si es que supero la validacion, caso contrario None
     '''
-    patron = r'^[0-7]$'
+    patron = r'^[0-9]$'
     return re.match(patron,opcion)
     
   
@@ -78,6 +81,13 @@ Menú:
         print(self.__equipo.Pertenece_al_salon_de_la_fama())
       elif opcion_seleccionada == "7":
         self.__equipo.Jugador_con_mas_rebotes()
+      elif opcion_seleccionada == "8":
+        self.__equipo.Mostrar_jugadores_ordenados_por_temporadas_desc()
+        self.__equipo.Guardar_jugadores_ordenados_por_temporadas_desc()
+        self.__equipo.Guardar_jugadores_ordenados_por_temporadas_desc_Json()
+        self.__equipo.Guardar_en_base_datos()
+      elif opcion_seleccionada == "9":
+        self.__equipo.Mostrar_jugadores_segun_robo_mas_bloqueos()       
       else:
         print('Nos volveremos a encontrar, adios!')
         break      
