@@ -62,7 +62,7 @@ Menú:
       print(self.__menu)
       opcion_seleccionada = self.__Validar_opcion_seleccionada(self.__Seleccionar_opcion())
       if not opcion_seleccionada:
-        print('Ingrese una opcion entre 0 y 7')
+        print('Ingrese una opcion entre 0 y 10')
         continue
       opcion_seleccionada = opcion_seleccionada.group()
       if opcion_seleccionada == "1":
@@ -85,9 +85,11 @@ Menú:
         self.__equipo.Mostrar_jugadores_ordenados_por_temporadas_desc()
         self.__equipo.Guardar_jugadores_ordenados_por_temporadas_desc()
         self.__equipo.Guardar_jugadores_ordenados_por_temporadas_desc_Json()
-        self.__equipo.Guardar_en_base_datos()
+        self.__equipo.Guardar_en_base_datos_jugadores_ordenados_por_temporadas_desc()
       elif opcion_seleccionada == "9":
-        self.__equipo.Mostrar_jugadores_segun_robo_mas_bloqueos()       
+        self.__equipo.Mostrar_jugadores_segun_robo_mas_bloqueos()
+      elif opcion_seleccionada == "10":
+        self.__equipo.Guardar_tabla_posiciones()           
       else:
         print('Nos volveremos a encontrar, adios!')
         break      

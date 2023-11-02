@@ -8,5 +8,5 @@ class Main:
         self.__menu.Mostrar_menu()
 
 
-main =  Main()
-main.Iniciar_programa()
+# main =  Main()
+# main.Iniciar_programa()

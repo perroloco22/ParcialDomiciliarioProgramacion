@@ -18,6 +18,10 @@ class Equipo:
       self.__nombre_equipo = ''
       self.__cantidad_jugadores = len(self.__jugadores)
       self.__jugador_actual = None
+      self.__nombre_base_de_datos = f'{RUTA_DB}JugadoresNba.db'
+      self.__tablas_creadas = [] 
+      self.__base_de_datos = BdConexion(self.__nombre_base_de_datos) 
+
 
    #Getters and setters
    @property
@@ -375,19 +379,21 @@ class Equipo:
       except Exception as e:
         print(f'An exception occurred {e}')
 
-   def Guardar_en_base_datos(self)->None:
+   def Guardar_en_base_datos_jugadores_ordenados_por_temporadas_desc(self)->None:
       '''
       Guarda en una base de datos lo jugadores ordenados descendentemente por temporadas
       Recibe: None
       Retorna: None
       '''
-      jugadores_ordenados = self.__Obtener_jugadores_ordenados_por_temporadas_desc()
-      nombre_de_la_base_de_datos = f'{RUTA_DB}JugadoresNba.db'
-      base_de_datos = BdConexion(nombre_de_la_base_de_datos)
+      jugadores_ordenados = self.__Obtener_jugadores_ordenados_por_temporadas_desc()      
       nombre_de_la_tabla = 'Temporadas'
-      base_de_datos.Crear_tabla(nombre_de_la_tabla,jugadores_ordenados[0])
-      base_de_datos.Agregar_registros(nombre_de_la_tabla,jugadores_ordenados)
-      print(f'Se guardo la informacion en la base de datos {nombre_de_la_base_de_datos} en la tabla {nombre_de_la_tabla}')
+
+      if not (nombre_de_la_tabla in self.__tablas_creadas):
+         self.__base_de_datos.Crear_tabla(nombre_de_la_tabla,jugadores_ordenados[0])
+         self.__tablas_creadas.append(nombre_de_la_tabla)
+
+      self.__base_de_datos.Agregar_registros(nombre_de_la_tabla,jugadores_ordenados,False)
+      print(f'Se guardo la informacion en la base de datos {self.__nombre_base_de_datos} en la tabla {nombre_de_la_tabla}')
    
    def Mostrar_jugadores_segun_robo_mas_bloqueos(self):
       '''
@@ -406,21 +412,54 @@ class Equipo:
       else:
          print(f'Tiene que ingresar un numero menor a {len(self.__jugadores) + 1}')
 
+   #EJERCICIO ADICIONAL 2/11
+   def __Filtrar_posiciones(self)-> list[dict]:
+      '''
+      Devuelve una lista con dicionarios, donde cada uno representa una posicion de un equipo de basket sin repeticiones
+      Recibe: None
+      Retorna: list[dict]
+      '''
+      if not self.__jugadores:
+         return 'No hay jugadores cargados'
+      posiciones = []
+      posiciones_encontradas = []
+      
+      for jugador in self.__jugadores:
+         if jugador.Posicion not in posiciones_encontradas:
+            posicion = {'Posicion': jugador.Posicion}
+            posiciones.append(posicion)
+            posiciones_encontradas.append(jugador.Posicion)
+            continue
+         if len(posicion) == 5:
+            break         
+      return posiciones
 
+   def Guardar_tabla_posiciones(self):
+      '''
+      Crea una tabla con las posiciones de un equipo de basket
+      Recibe: None
+      Retorna: None
+      '''
+      posiciones = self.__Filtrar_posiciones()
+      if isinstance(posiciones, str) or not posiciones:
+         return 'Error en la creacion de posiciones'
+      nombre_tabla = "Posiciones"
 
-# test_equipo = Equipo('./Data/dream_team.json')
-# test_equipo.Crear_equipo()
-# test_equipo.Mostrar_Jugadores()
-# test_equipo.Ver_estadisticas_del_jugador('1')
-# test_equipo.Guardar_estadisticas()
-# test_equipo.Ver_logros_de_un_jugador('Michael Jordan')
-# test_equipo.Calcular_y_mostrar_promedio_orndenado()
-# print(test_equipo.Pertenece_al_salon_de_la_fama())
-# test_equipo.Jugador_con_mas_rebotes()
-# test_equipo.Mostrar_jugadores_ordenados_por_temporadas_desc()
-# test_equipo.Guardar_jugadores_ordenados_por_temporadas_desc_Json()
-# test_equipo.Guardar_en_base_datos()
-# test_equipo.Mostrar_jugadores_segun_robo_mas_bloqueos()
+      if not (nombre_tabla in self.__tablas_creadas):
+         self.__base_de_datos.Crear_tabla(nombre_tabla,posiciones[0])
+         self.__tablas_creadas.append(nombre_tabla)
+
+      self.__base_de_datos.Agregar_registros(nombre_tabla,posiciones,False)
+      print(f'Se guardo la informacion en la base de datos {self.__nombre_base_de_datos} en la tabla {nombre_tabla}')
+
+      
+      
+
+      
+
+      
+   
+
 
 
        

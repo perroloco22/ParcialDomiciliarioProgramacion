@@ -22,7 +22,7 @@ def reemplazar_guinoes_por_espacios(string: str) -> str:
 
 def quick_sort(lista: list[dict], key: str,modo: str) -> list[dict] :
     '''
-    Ordena una lista de diccionarios usando el algoritmo de Quick Sort. Los ordena segun la clave que reciba como parametro. Segun el modo recibido los ordena de manera descendente("des") o ascendente("asc")
+    Ordena una lista de diccionarios usando el algoritmo de quick sort. Los ordena segun la clave que reciba como parametro. Segun el modo recibido los ordena de manera descendente("des") o ascendente("asc")
     '''
     if len(lista) < 2:
         return lista
@@ -42,14 +42,29 @@ def quick_sort(lista: list[dict], key: str,modo: str) -> list[dict] :
         return quick_sort(mas_grandes, key,modo) + [jugador_pivot] + quick_sort(mas_chicos, key,modo)
         
 def es_nombre_valido(nombre: str):
+    '''
+    Valida si el string que recibe como parametro tiene el formato valida de un nombre
+    Recibe: str
+    Retorna: objeto Match en caso de ser valido, caso contrario None
+    '''
     patron = r'^[a-zA-z][a-zA-Z ]+[a-z]$'
     return re.match(patron,nombre)
 
-def validar_nombre_archivo(nombre: str):
+def validar_nombre_archivo(nombre: str)->re.Match:
+    '''
+    Valida si el string que recibe como parametro tiene el formato valida de un nombre de archivo
+    Recibe: str
+    Retorna: objeto Match en caso de ser valido, caso contrario None
+    '''
     patron = r'^[a-zA-z0-9_]+$'
     return re.match(patron,nombre)
 
 def obtener_porcentaje(parte: float, total: float)->float:
+    '''
+    Calcula una parte de un total en porcentaje y lo devuelve
+    Recibe: 2 parametros float
+    Retorna: float
+    '''
     return round((parte/total) * 100,2)
 
 

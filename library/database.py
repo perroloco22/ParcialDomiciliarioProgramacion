@@ -6,7 +6,15 @@ class BdConexion:
         self.__cadena_de_conexion = cadena_de_conexion 
         self.__formatos_equivalentes ={'int':'integer','string': 'text','float': 'real'}
     
-    
+    def __Limpiar_tabla(self, nombre_tabla: str):
+        with sqlite3.connect(self.__cadena_de_conexion) as connection:
+          try:
+            query_delete = f'DELETE FROM {nombre_tabla}'            
+            connection.execute(query_delete)
+          except sqlite3.OperationalError:
+            print(f'La tabla no pudo ser limpiada')
+
+
     def __Obtener_tipo_equivalente(self, dato: object)->str:
         '''
         Recibe un objeto y devuelve el objeto equilavente que admite sqlite
@@ -37,14 +45,16 @@ class BdConexion:
           except sqlite3.OperationalError:
             print(f'La tabla {nombre_de_tabla} ya existe') 
 
-    def Agregar_registros(self,nombre_de_tabla: str, jugadores: list[dict]):
+    def Agregar_registros(self,nombre_de_tabla: str, jugadores: list[dict],agregar: bool):
         '''
         Agrega registros en la tabla. Cada diccionario que representa un jugador sera un registro aniadido en la tabla.
         Recibe: nombre de la tabla(str), jugadores(list[dict])
         Retorna: None
         '''
-        with sqlite3.connect(self.__cadena_de_conexion) as connection:
-            try:
+        try:
+            with sqlite3.connect(self.__cadena_de_conexion) as connection:
+                if not agregar:
+                    self.__Limpiar_tabla(nombre_de_tabla)
                 campos = ','.join([clave for clave in jugadores[0].keys()])
                 values = ','.join(['?' for clave in jugadores[0].keys()])
                 query = f'insert into {nombre_de_tabla}({campos}) values({values})'
@@ -52,5 +62,6 @@ class BdConexion:
                     values = tuple(jugador.values())
                     connection.execute(query,values)                
                 connection.commit()
-            except sqlite3.OperationalError:
+        except sqlite3.OperationalError:
                 print('Hubo un error en la ejecucion')
+            
